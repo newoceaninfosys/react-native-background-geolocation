@@ -17,6 +17,8 @@ import android.os.RemoteException;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.text.TextUtils;
+import android.Manifest;
+import android.support.v4.app.ActivityCompat;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -55,10 +57,15 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     public static final String STATIONARY_EVENT = "stationary";
     public static final String ERROR_EVENT = "error";
     private static final Integer MESSENGER_CLIENT_ID = 666;
+    private static final int PERMISSION_REQUEST_CODE = 99;
 
-    /** Messenger for communicating with the service. */
+    /**
+     * Messenger for communicating with the service.
+     */
     private Messenger mService = null;
-    /** Flag indicating whether we have called bind on the service. */
+    /**
+     * Flag indicating whether we have called bind on the service.
+     */
     private Boolean mIsBound = false;
 
     private Boolean mIsServiceRunning = false;
@@ -124,7 +131,8 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                         Integer locationProvider = location.getLocationProvider();
 
                         WritableMap out = Arguments.createMap();
-                        if (locationProvider != null) out.putInt("locationProvider", locationProvider);
+                        if (locationProvider != null)
+                            out.putInt("locationProvider", locationProvider);
                         out.putDouble("time", new Long(location.getTime()).doubleValue());
                         out.putDouble("latitude", location.getLatitude());
                         out.putDouble("longitude", location.getLongitude());
@@ -154,7 +162,8 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                         Integer locationProvider = location.getLocationProvider();
 
                         WritableMap out = Arguments.createMap();
-                        if (locationProvider != null) out.putInt("locationProvider", locationProvider);
+                        if (locationProvider != null)
+                            out.putInt("locationProvider", locationProvider);
                         out.putDouble("time", new Long(location.getTime()).doubleValue());
                         out.putDouble("latitude", location.getLatitude());
                         out.putDouble("longitude", location.getLongitude());
@@ -221,26 +230,41 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     @ReactMethod
     public void configure(ReadableMap options, Callback success, Callback error) {
         Config config = new Config();
-        if (options.hasKey("stationaryRadius")) config.setStationaryRadius((float) options.getDouble("stationaryRadius"));
-        if (options.hasKey("distanceFilter")) config.setDistanceFilter(options.getInt("distanceFilter"));
-        if (options.hasKey("desiredAccuracy")) config.setDesiredAccuracy(options.getInt("desiredAccuracy"));
+        if (options.hasKey("stationaryRadius"))
+            config.setStationaryRadius((float) options.getDouble("stationaryRadius"));
+        if (options.hasKey("distanceFilter"))
+            config.setDistanceFilter(options.getInt("distanceFilter"));
+        if (options.hasKey("desiredAccuracy"))
+            config.setDesiredAccuracy(options.getInt("desiredAccuracy"));
         if (options.hasKey("debug")) config.setDebugging(options.getBoolean("debug"));
-        if (options.hasKey("notificationTitle")) config.setNotificationTitle(options.getString("notificationTitle"));
-        if (options.hasKey("notificationText")) config.setNotificationText(options.getString("notificationText"));
-        if (options.hasKey("notificationIconLarge")) config.setLargeNotificationIcon(options.getString("notificationIconLarge"));
-        if (options.hasKey("notificationIconSmall")) config.setSmallNotificationIcon(options.getString("notificationIconSmall"));
-        if (options.hasKey("notificationIconColor")) config.setNotificationIconColor(options.getString("notificationIconColor"));
-        if (options.hasKey("stopOnTerminate")) config.setStopOnTerminate(options.getBoolean("stopOnTerminate"));
+        if (options.hasKey("notificationTitle"))
+            config.setNotificationTitle(options.getString("notificationTitle"));
+        if (options.hasKey("notificationText"))
+            config.setNotificationText(options.getString("notificationText"));
+        if (options.hasKey("notificationIconLarge"))
+            config.setLargeNotificationIcon(options.getString("notificationIconLarge"));
+        if (options.hasKey("notificationIconSmall"))
+            config.setSmallNotificationIcon(options.getString("notificationIconSmall"));
+        if (options.hasKey("notificationIconColor"))
+            config.setNotificationIconColor(options.getString("notificationIconColor"));
+        if (options.hasKey("stopOnTerminate"))
+            config.setStopOnTerminate(options.getBoolean("stopOnTerminate"));
         if (options.hasKey("startOnBoot")) config.setStartOnBoot(options.getBoolean("startOnBoot"));
-        if (options.hasKey("startForeground")) config.setStartForeground(options.getBoolean("startForeground"));
-        if (options.hasKey("locationProvider")) config.setLocationProvider(options.getInt("locationProvider"));
+        if (options.hasKey("startForeground"))
+            config.setStartForeground(options.getBoolean("startForeground"));
+        if (options.hasKey("locationProvider"))
+            config.setLocationProvider(options.getInt("locationProvider"));
         if (options.hasKey("interval")) config.setInterval(options.getInt("interval"));
-        if (options.hasKey("fastestInterval")) config.setFastestInterval(options.getInt("fastestInterval"));
-        if (options.hasKey("activitiesInterval")) config.setActivitiesInterval(options.getInt("activitiesInterval"));
-        if (options.hasKey("stopOnStillActivity")) config.setStopOnStillActivity(options.getBoolean("stopOnStillActivity"));
+        if (options.hasKey("fastestInterval"))
+            config.setFastestInterval(options.getInt("fastestInterval"));
+        if (options.hasKey("activitiesInterval"))
+            config.setActivitiesInterval(options.getInt("activitiesInterval"));
+        if (options.hasKey("stopOnStillActivity"))
+            config.setStopOnStillActivity(options.getBoolean("stopOnStillActivity"));
         if (options.hasKey("url")) config.setUrl(options.getString("url"));
         if (options.hasKey("syncUrl")) config.setSyncUrl(options.getString("syncUrl"));
-        if (options.hasKey("syncThreshold")) config.setSyncThreshold(options.getInt("syncThreshold"));
+        if (options.hasKey("syncThreshold"))
+            config.setSyncThreshold(options.getInt("syncThreshold"));
         if (options.hasKey("httpHeaders")) {
             HashMap httpHeaders = new HashMap<String, String>();
             ReadableMap rm = options.getMap("httpHeaders");
@@ -279,7 +303,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
             startAndBindBackgroundService();
             success.invoke(true);
         } else {
-            //TODO: requestPermissions
+            Activity activity = getCurrentActivity();
+            if (activity == null) return;
+            String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+            ActivityCompat.requestPermissions(activity, permissions, PERMISSION_REQUEST_CODE);
         }
     }
 
@@ -445,7 +472,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     protected void startBackgroundService() {
-        if (mIsServiceRunning) { return; }
+        if (mIsServiceRunning) {
+            return;
+        }
 
         final Activity currentActivity = this.getCurrentActivity();
         Intent locationServiceIntent = new Intent(currentActivity, LocationService.class);
@@ -457,7 +486,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     protected void stopBackgroundService() {
-        if (!mIsServiceRunning) { return; }
+        if (!mIsServiceRunning) {
+            return;
+        }
 
         log.info("Stopping bg service");
         final Activity currentActivity = this.getCurrentActivity();
@@ -469,7 +500,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         // Establish a connection with the service.  We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
-        if (mIsBound) { return; }
+        if (mIsBound) {
+            return;
+        }
 
         mMessenger = new Messenger(new IncomingHandler());
 
@@ -479,7 +512,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         currentActivity.bindService(locationServiceIntent, mConnection, Context.BIND_IMPORTANT);
     }
 
-    void doUnbindService () {
+    void doUnbindService() {
         if (mIsBound) {
             // If we have received the service, and hence registered with
             // it, then now is the time to unregister.
