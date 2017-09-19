@@ -53,7 +53,9 @@ import java.util.Iterator;
 
 public class LocationService extends Service {
 
-    /** Keeps track of all current registered clients. */
+    /**
+     * Keeps track of all current registered clients.
+     */
     HashMap<Integer, Messenger> mClients = new HashMap();
 
     /**
@@ -96,10 +98,14 @@ public class LocationService extends Service {
     public static final int MSG_SWITCH_MODE = 6;
 
 
-    /** background operation mode of location provider */
+    /**
+     * background operation mode of location provider
+     */
     public static final int BACKGROUND_MODE = 0;
 
-    /** foreground operation mode of location provider */
+    /**
+     * foreground operation mode of location provider
+     */
     public static final int FOREGROUND_MODE = 1;
 
     private static final int ONE_MINUTE = 1000 * 60;
@@ -307,15 +313,15 @@ public class LocationService extends Service {
 
     /**
      * Handle location from location location provider
-     *
+     * <p>
      * All locations updates are recorded in local db at all times.
      * Also location is also send to all messenger clients.
-     *
+     * <p>
      * If option.url is defined, each location is also immediately posted.
      * If post is successful, the location is deleted from local db.
      * All failed to post locations are coalesced and send in some time later in one single batch.
      * Batch sync takes place only when number of failed to post locations reaches syncTreshold.
-     *
+     * <p>
      * If only option.syncUrl is defined, locations are send only in single batch,
      * when number of locations reaches syncTreshold.
      *
@@ -384,7 +390,7 @@ public class LocationService extends Service {
     }
 
     @Override
-    public void unregisterReceiver (BroadcastReceiver receiver) {
+    public void unregisterReceiver(BroadcastReceiver receiver) {
         super.unregisterReceiver(receiver);
     }
 
@@ -398,7 +404,7 @@ public class LocationService extends Service {
     }
 
     // method will mutate location
-    public Long persistLocation (BackgroundLocation location) {
+    public Long persistLocation(BackgroundLocation location) {
         Long locationId = -1L;
         try {
             locationId = dao.persistLocationWithLimit(location, config.getMaxLocations());
@@ -420,8 +426,7 @@ public class LocationService extends Service {
         PostLocationTask task = new LocationService.PostLocationTask();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, location);
-        }
-        else {
+        } else {
             task.execute(location);
         }
     }
@@ -451,7 +456,20 @@ public class LocationService extends Service {
             }
 
             String url = config.getUrl();
-            log.debug("Posting json to url: {} headers: {}", url, config.getHttpHeaders());
+
+            JSONObject loc = null;
+            if (jsonLocations.length() > 0) {
+                try {
+                    loc = jsonLocations.getJSONObject(jsonLocations.length() - 1);
+                } catch (JSONException e) {
+                }
+            }
+
+            if(loc == null){
+                return true;
+            }
+
+            log.debug("Posting json to url: {} headers: {} body: {}", url, config.getHttpHeaders(), loc);
             int responseCode;
 
             try {
