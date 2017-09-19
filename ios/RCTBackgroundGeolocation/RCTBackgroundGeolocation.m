@@ -104,7 +104,6 @@ RCT_EXPORT_METHOD(finish:(int)taskId)
 RCT_EXPORT_METHOD(isLocationEnabled:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #isLocationEnabled");
-    callback(@[@([locationManager isLocationEnabled])]);
     if ([locationManager isLocationEnabled]) {
         success(@[[NSNull null]]);
     } else {
