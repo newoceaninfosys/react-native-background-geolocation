@@ -443,7 +443,7 @@ public class LocationService extends Service {
 
         @Override
         protected Boolean doInBackground(BackgroundLocation... locations) {
-            log.debug("Executing PostLocationTask#doInBackground");
+            log.debug("Executing PostLocationTask#doInBackground {}", locations.toString());
             JSONArray jsonLocations = new JSONArray();
             for (BackgroundLocation location : locations) {
                 try {
@@ -473,7 +473,8 @@ public class LocationService extends Service {
             int responseCode;
 
             try {
-                responseCode = HttpPostService.postJSON(url, jsonLocations, config.getHttpHeaders());
+                responseCode = HttpPostService.postJSON(url, loc, config.getHttpHeaders());
+                log.debug("Posting json responseCode {}", responseCode);
             } catch (Exception e) {
                 hasConnectivity = isNetworkAvailable();
                 log.warn("Error while posting locations: {}", e.getMessage());
