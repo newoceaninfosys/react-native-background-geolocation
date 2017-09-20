@@ -206,7 +206,7 @@ enum {
 {
     NSArray *locations = [[NSArray alloc] initWithObjects:[self toDictionary], nil];
     //    NSArray *jsonArray = [NSJSONSerialization JSONObjectWithData: data options: NSJSONReadingMutableContainers error: &e];
-    NSData *data = [NSJSONSerialization dataWithJSONObject:locations options:0 error:outError];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:locations.lastObject options:0 error:outError];
     if (!data) {
         return NO;
     }
